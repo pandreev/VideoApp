@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/templates/default.xhtml">
+    <f:loadBundle basename="dictionaries.dictionary" var="dict"/>
+
+    <ui:define name="content">
+        <h:form id="course" rendered="#{auth.isLoggedIn}">
+            <div style="width: 590px;">
+                <p:fileUpload fileUploadListener="#{upload.upload}" mode="advanced"
+                              dragDropSupport="false" label="#{dict.selectNewVideo}"
+                              uploadLabel="#{dict.uploadNewVideo}" cancelLabel="#{dict.cancel}"
+                              update="messages" auto="false" sizeLimit="1000000000"
+                              allowTypes="/(\.|\/)(flv|mpe?g|mp4)$/"
+                              rendered="#{coursePage.isCourseAdmin}">
+                </p:fileUpload>
+                <p:growl id="messages" showDetail="true"/>
+                <h:inputHidden id="courseId" value="#{coursePage.course.id}"/>
+            </div>
+            <h3>${pageContext.request.contextPath}</h3>
+
+            <div class="hideHistory" id="alwaysHidden">
+                <h:inputHidden id="videoStartTime" value="0"/>
+                <h:inputHidden id="videoEndTime" value="0"/>
+                <h:inputHidden id="videoTimeId" value="0"/>
+            </div>
+            <div class="hideMe" id="enlargedVideoContainer" style="z-index: 10;">
+                <div class="videoDetail">
+                    <h:panelGrid columns="5" style="margin-bottom:10px; width: 100%;" cellpadding="5">
+                        <h:selectOneMenu value="reg"
+                                         onchange="playVideo('enlargedVideo', '_' + this.value +'.mp4');">
+                            <f:selectItem itemLabel="1280x720" itemValue="reg"/>
+                            <f:selectItem itemLabel="1920x1080" itemValue="high"/>
+                        </h:selectOneMenu>
+                        <h:outputText id="videoName" value="#{dict.videoName} "/>
+                        <h:outputText id="creationDate" value="#{dict.videoCreated} "/>
+
+                        <p:commandButton id="saveUsage" value=""
+                                         actionListener="#{coursePage.saveVideoWatched}"
+                                         ajax="false"
+                                         style="visibility: hidden"/>
+                        <img class="closeVideo" src="resources/gfx/close.png" onclick="closeVideo(); "/>
+                    </h:panelGrid>
+                    <h:inputHidden id="videoId" value="init"/>
+
+                    <div id="flashPlayer" style="display: none">
+                        <a href="" style="display:block; width:640px; height:360px;" id="enlargedVideo"/>
+                    </div>
+                    <div id="htmlPlayer" style="display: none">
+                        <video controls="controls">
+                            <source id="htmlSrc" src="" type="video/mp4"/>
+                        </video>
+                    </div>
+
+                </div>
+            </div>
+            <div style="width: 590px;">
+                <p:dataGrid id="dataGrid" var="video" value="#{coursePage.uploadedVideos}" columns="2"
+                            paginator="true" lazy="false" rows="8"
+                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="4,8,12">
+                    <f:param name="courseId" value="#{coursePage.course.id}"/>
+                    <p:panel id="videoPanel" header="#{video.originalName}" style="text-align:center; width: 280px;">
+                        <img src="resources/snapshot/#{video.videoName}.png" width="215px"
+                             onclick="showVideo('enlargedVideo', '#{video.videoName}', '#{video.id}','_reg.mp4', '#{video.originalName}', '#{video.formattedCreationDate}','#{video.subtitles}','#{video.alternativeUrl}' );"/>
+                        <h:panelGrid style="width:100%">
+                            <p:row>
+                                <p:column>
+                                    <p:dialog header="#{dict.history}" widgetVar="historyDlg#{video.id}" minHeight="40">
+                                        <p:dataGrid id="historyList" var="entry" value="#{video.watches}" columns="1"
+                                                    paginator="true" lazy="false" rows="15"
+                                                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                                    rowsPerPageTemplate="15, 20">
+                                            <h:panelGrid columns="3" style="width:100%">
+                                                <span style="width: 33%">${entry.name}</span>
+                                                <span style="width: 33%">${entry.startTime}</span>
+                                                <span style="width: 33%">${entry.endTime}</span>
+                                            </h:panelGrid>
+                                        </p:dataGrid>
+                                    </p:dialog>
+                                </p:column>
+                            </p:row>
+                            <p:row>
+                                <p:column rendered="#{coursePage.isCourseAdmin}">
+                                    <p:commandButton id="history#{video.id}" icon="ui-icon-script"
+                                                     title="#{dict.history}"
+                                                     type="button"
+                                                     onclick="PF('historyDlg#{video.id}').show();"/>
+                                </p:column>
+                                <p:column>
+                                    <p:commandButton title="#{dict.download}" ajax="false"
+                                                     onclick="PrimeFaces.monitorDownload(start, stop);"
+                                                     icon="ui-icon-arrowthick-1-s">
+                                        <p:fileDownload value="#{fileDownload.getFile(video.id)}"/>
+                                    </p:commandButton>
+                                </p:column>
+                                <p:column rendered="#{not empty video.alternativeUrl}">
+                                    <p:button id="altLink#{video.id}" title="#{dict.altUrl}" ajax="false"
+                                              icon="ui-icon-video"
+                                              onclick="window.open('#{video.alternativeUrl}'); return false;"/>
+
+                                </p:column>
+                                <p:column rendered="#{coursePage.isCourseAdmin}">
+                                    <p:commandButton id="removeVideo#{video.id}" title="#{dict.removeVideo}"
+                                                     style="float: right" icon="ui-icon-trash"
+                                                     onclick="confirmation#{video.id}.show()" type="button"/>
+                                </p:column>
+                            </p:row>
+                            <p:row>
+                                <p:confirmDialog message="#{dict.confirmation}" header="#{dict.removeVideo}"
+                                                 severity="alert"
+                                                 widgetVar="confirmation#{video.id}">
+                                    <p:commandButton value="#{dict.confirmationYes}"
+                                                     oncomplete="confirmation#{video.id}.hide()"
+                                                     actionListener="#{coursePage.removeVideo(video.id)}"/>
+                                    <p:commandButton value="#{dict.confirmationNo}"
+                                                     onclick="confirmation#{video.id}.hide()"
+                                                     type="button"/>
+                                </p:confirmDialog>
+                            </p:row>
+                            <p:row rendered="#{coursePage.isCourseAdmin}">
+                                <p:column colspan="2">
+                                    <p:fileUpload fileUploadListener="#{upload.uploadSub}" mode="advanced"
+                                                  dragDropSupport="false" label="#{dict.uploadNewSubs}"
+                                                  update="subMessages" auto="true" sizeLimit="100000"
+                                                  allowTypes="/(\.|\/)(srt)$/">
+                                        <f:attribute name="videoId" value="#{video.id}"/>
+                                    </p:fileUpload>
+                                </p:column>
+                                <p:column><p:growl id="subMessages" showDetail="true"/></p:column>
+                            </p:row>
+                            <p:row rendered="#{coursePage.isCourseAdmin}">
+                                <p:column>
+                                    <p:outputLabel value="#{dict.name}"/>
+                                </p:column>
+                                <p:column>
+                                    <p:inputText id="newVideoName" value="#{coursePage.newVideoName}"
+                                                 required="false" style="width: 120px;"/>
+                                </p:column>
+                                <p:column>
+                                    <p:commandLink id="changeName" value="#{dict.change}"
+                                                   actionListener="#{coursePage.setVideoName(video.id)}"
+                                                   ajax="false">
+                                    </p:commandLink>
+                                </p:column>
+                            </p:row>
+                            <p:row rendered="#{coursePage.isCourseAdmin}">
+                                <p:column>
+                                    <p:outputLabel value="#{dict.url}"/>
+                                </p:column>
+                                <p:column>
+                                    <p:inputText id="videoAltUrl" value="#{coursePage.altUrl}" required="false"
+                                                 style="width: 120px;"/>
+                                </p:column>
+                                <p:column>
+                                    <p:commandLink id="setUrl" value="#{dict.change}"
+                                                   actionListener="#{coursePage.setAlternativeUrl(video.id)}"
+                                                   ajax="false">
+
+                                    </p:commandLink>
+                                </p:column>
+                            </p:row>
+                        </h:panelGrid>
+                    </p:panel>
+                </p:dataGrid>
+            </div>
+        </h:form>
+    </ui:define>
+</ui:composition>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/templates/default.xhtml">
+    <f:loadBundle basename="dictionaries.dictionary" var="dict"/>
+    <ui:define name="content">
+        <h:form id="allCourses" rendered="#{auth.isLoggedIn}">
+            <div style="width: 590px;">
+                <p:dataGrid var="each" value="#{allCourses.allCourses}" columns="4"
+                            rows="12" paginator="true"
+                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="12,24">
+
+                    <p:panel header="#{each.course.courseName}" style="text-align:center; width: 130px; height: 130px;">
+                        <h:panelGrid columns="1" style="width:100%">
+                            <span style="overflow: hidden; text-overflow: ellipsis;">#{each.course.courseName}</span>
+                            <p:commandButton value="#{dict.enroll}" actionListener="#{allCourses.enrollCourse}"
+                                             ajax="false" styleClass="loginButton" style="vertical-align: bottom;"
+                                             rendered="#{!each.enrolled}">
+                                <f:param name="courseId" value="#{each.course.id}"/>
+                            </p:commandButton>
+                            <p:commandButton value="#{dict.withdraw}" actionListener="#{allCourses.withdrawCourse}"
+                                             ajax="false" styleClass="loginButton" style="vertical-align: bottom;"
+                                             rendered="#{each.enrolled}">
+                                <f:param name="courseId" value="#{each.course.id}"/>
+                            </p:commandButton>
+                        </h:panelGrid>
+                    </p:panel>
+
+                </p:dataGrid>
+            </div>
+
+
+        </h:form>
+    </ui:define>
+</ui:composition>

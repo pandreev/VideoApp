@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/templates/default.xhtml">
+    <f:loadBundle basename="dictionaries.dictionary" var="dict"/>
+    <ui:define name="content">
+        <h:form id="reg">
+            <h:messages styleClass="messages" errorClass="invalid" infoClass="valid" warnClass="warning"
+                        globalOnly="true"/>
+            <h2>#{dict.userRegistration}</h2>
+            <h:panelGrid columns="3" columnClasses="titleCell">
+                <h:outputLabel for="email" value="#{dict.email}"/>
+                <h:inputText id="email" value="#{newUser.email}"/>
+                <h:message for="email" errorClass="invalid"/>
+
+                <h:outputLabel for="password" value="#{dict.password}"/>
+                <h:inputSecret id="password" value="#{newUser.password}"/>
+                <h:message for="password" errorClass="invalid"/>
+
+                <h:outputLabel for="firstName" value="#{dict.firstName}"/>
+                <h:inputText id="firstName" value="#{newUser.firstName}"/>
+                <h:message for="firstName" errorClass="invalid"/>
+
+                <h:outputLabel for="lastName" value="#{dict.lastName}"/>
+                <h:inputText id="lastName" value="#{newUser.lastName}"/>
+                <h:message for="lastName" errorClass="invalid"/>
+            </h:panelGrid>
+            <p>
+                <h:panelGrid columns="2">
+                    <h:commandButton id="register" action="#{registration.register}" value="#{dict.register}"
+                                     styleClass="register"/>
+                </h:panelGrid>
+            </p>
+        </h:form>
+    </ui:define>
+</ui:composition>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/templates/external.xhtml">
+    <f:loadBundle basename="dictionaries.dictionary" var="dict"/>
+    <ui:define name="content">
+        <h:form id="extVideo">
+            <div class="videoDetail">
+                <h:panelGrid columns="4" style="margin-bottom:10px; width: 100%;" cellpadding="5">
+                    <h:outputText id="videoName" value="#{dict.videoName}"/>
+                    <h:outputText id="videoNameValue" value="#{externalVideoPlayer.videoToPlay.originalName}"/>
+                    <h:outputText id="creationDate" value="#{dict.videoCreated}"/>
+                    <h:outputText id="creationDateValue"
+                                  value="#{externalVideoPlayer.videoToPlay.formattedCreationDate}"/>
+                </h:panelGrid>
+                <h:inputHidden id="videoId" value="#{externalVideoPlayer.videoToPlay.id}"/>
+                <h:panelGrid columns="2" style="width:50%">
+                    <p:commandButton id="playButtonReg" value="#{dict.playRegular}"
+                                     styleClass="playButton"
+                                     onsuccess="playVideo('enlargedVideo', '#{externalVideoPlayer.videoToPlay.videoName}', '_reg.mp4', '#{externalVideoPlayer.videoToPlay.subtitles}');"/>
+                    <p:commandButton id="playButtonHD" value="#{dict.playHD}"
+                                     onsuccess="playVideo('enlargedVideo', '#{externalVideoPlayer.videoToPlay.videoName}', '_high.mp4', '#{externalVideoPlayer.videoToPlay.subtitles}');"/>
+                </h:panelGrid>
+
+                <div id="flashPlayer">
+                    <a href="" style="display:block; width:640px; height:360px;" id="enlargedVideo"/>
+                </div>
+            </div>
+        </h:form>
+    </ui:define>
+</ui:composition>

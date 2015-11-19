@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/templates/default.xhtml">
+    <f:loadBundle basename="dictionaries.dictionary" var="dict"/>
+    <ui:define name="content">
+        <h:form id="reg">
+            <h:messages styleClass="messages" errorClass="invalid" infoClass="valid" warnClass="warning" globalOnly="true"/>
+            <h2>#{dict.createCourse}</h2>
+            <h:panelGrid columns="3" columnClasses="titleCell">
+                <h:outputLabel for="courseName" value="#{dict.courseName}"/>
+                <h:inputText id="courseName" value="#{newCourse.courseName}"/>
+                <h:message for="courseName" errorClass="invalid"/>
+            </h:panelGrid>
+            <p>
+                <h:panelGrid columns="2">
+                    <h:commandButton id="register" action="#{courseRegistration.create}" value="#{dict.create}" styleClass="register"/>
+                </h:panelGrid>
+            </p>
+        </h:form>
+    </ui:define>
+</ui:composition>
